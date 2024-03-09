@@ -31,9 +31,9 @@ class GameController {
   GameController() {
     guns = new ArrayList<Gun>();
     // Add guns to the list
-    guns.add(new Gun("revolver", 100, 100, 100, 100, 7, 3, 12, true, "Assets/guns/revolver.png", "Assets/guns/revolver_scope.png", "Assets/guns/revolver_shot.mp3", "Assets/guns/revolver_reload.wav"));
-    guns.add(new Gun("ak47", 200, 100, 100, 100, 30, 3, 12, false, "Assets/guns/ak47.png", "Assets/guns/ak47_scope.png", "Assets/guns/ak47_shot.mp3", "Assets/guns/ak47_reload.wav"));
-    guns.add(new Gun("sniper", 300, 100, 100, 100, 1, 3, 12, false, "Assets/guns/sniper.png", "Assets/guns/sniper_scope.png", "Assets/guns/sniper_shot.mp3", "Assets/guns/sniper_reload.wav"));
+    guns.add(new Gun("revolver", 100, 100, 100, 100, 7, 3, 12, true, false, "Assets/guns/revolver.png", "Assets/guns/revolver_scope.png", "Assets/guns/revolver_shot.mp3", "Assets/guns/revolver_reload.wav"));
+    guns.add(new Gun("ak47", 200, 100, 100, 100, 30, 3, 12, false, true, "Assets/guns/ak47.png", "Assets/guns/ak47_scope.png", "Assets/guns/ak47_shot.mp3", "Assets/guns/ak47_reload.wav"));
+    guns.add(new Gun("sniper", 300, 100, 100, 100, 1, 3, 12, false, false, "Assets/guns/sniper.png", "Assets/guns/sniper_scope.png", "Assets/guns/sniper_shot.mp3", "Assets/guns/sniper_reload.wav"));
   }
 
   ArrayList<Gun> getGuns() {
@@ -74,6 +74,7 @@ class Gun {
     int reloadTime;
     int damage;
     boolean isActive;
+    boolean isFiringAuto;
     String gunImageFile;
     String scopeImageFile;
     String fireSoundFile;
@@ -82,11 +83,13 @@ class Gun {
     SoundFile fireSound;
     SoundFile reloadSound;
     boolean isReloading = false;
+    boolean isFiring = false;
     float targetShake = 0;
     float maxTargetShake = 10;
     float shakeDecay = 0.8f;
+  
     
-    Gun(String name, int x, int y, int height, int width, int maxBulletCount, int reloadTime, int damage, boolean isActive, String gunImageFile, String scopeImageFile, String fireSoundFile, String reloadSoundFile) {
+    Gun(String name, int x, int y, int height, int width, int maxBulletCount, int reloadTime, int damage, boolean isActive, boolean isFiringAuto, String gunImageFile, String scopeImageFile, String fireSoundFile, String reloadSoundFile) {
         this.name = name;
         this.x = x;
         this.y = y;
@@ -97,6 +100,7 @@ class Gun {
         this.reloadTime = reloadTime;
         this.damage = damage;
         this.isActive = isActive;
+        this.isFiringAuto = isFiringAuto;
         this.gunImageFile = gunImageFile;
         this.scopeImageFile = scopeImageFile;
         this.fireSoundFile = fireSoundFile;
@@ -130,14 +134,41 @@ class Gun {
     void fire() {
       if (isActive) {
         if (currentBulletCount > 0) {
-            currentBulletCount--;
-            targetShake = maxTargetShake;
-            fireSound.play();
+          isFiring = true;
+            if (isFiringAuto) {
+              Thread fireThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                  while (isFiring) {
+                    if (currentBulletCount > 0) {
+                      currentBulletCount--;
+                      targetShake = maxTargetShake;
+                      fireSound.play();
+                      try {
+                        Thread.sleep(100);
+                      } catch (InterruptedException e) {
+                        e.printStackTrace();
+                      }
+                    } else {
+                      isFiring = false;
+                    }
+                  }
+                }
+              });
+              fireThread.start();
+            } else {
+                currentBulletCount--;
+                targetShake = maxTargetShake;
+                fireSound.play();
+                isFiring = false;
+                print(currentBulletCount);
+            }
+
         } else if (!isReloading) {  // Check if not already reloading
             isReloading = true;
             reload();
           }
-          print(currentBulletCount);
+
       }
     }
 
@@ -169,6 +200,11 @@ void mousePressed() {
   gameController.getActiveGun().fire();
 }
 
+void mouseReleased() {
+  gameController.getActiveGun().isFiring = false;
+}
+
+
 void keyPressed() {
   if (key == '1') {
     gameController.setActiveGun(0);
@@ -178,7 +214,6 @@ void keyPressed() {
     gameController.setActiveGun(2);
   }
 }
-
 
 // void mouseWheel(MouseEvent event) {
 //   float e = event.getCount();
