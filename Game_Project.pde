@@ -1,6 +1,8 @@
 import processing.sound.*;
 
 
+String projectBaseURL = "C:/Users/elmo/Desktop/Game_Project/";
+
 Gun revolver, ak47, sniper;
 
 GameController gameController;
@@ -9,7 +11,7 @@ void setup() {
     noCursor();
     fullScreen();
     noStroke();
-    frameRate(60);
+    frameRate(30);
 }
 
 void draw() {
@@ -21,8 +23,33 @@ void draw() {
 
 
 
+static class Player {
+    static int health = 3;
+    
+    static void takeDamage(int damage) {
+        health -= damage;
+    }
+    
+    boolean isGameOver() {
+        if (health <= 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+
+
+
+
+
 // ======================================================== GameController Class =======================================================//
 class GameController {
+    Player player;
+    
+    
+    ArrayList<Enemy> enemies;
     ArrayList<Gun> guns;
     int activeGunIndex = 0;
     
@@ -42,7 +69,7 @@ class GameController {
     int gunsHeight = 64;
     int gunsWidth = 64;
     
-
+    
     // create 2 arraylists to store the x and y positions of the ammo
     ArrayList<Integer> ammoX = new ArrayList<Integer>();
     ArrayList<Integer> ammoY = new ArrayList<Integer>();
@@ -53,7 +80,7 @@ class GameController {
     int ammoMarginY = 32;
     int currentAmmoTextSize = 32;
     int maxAmmoTextSize = 18;
-
+    
     // create 2 arraylists to store the x and y positions of the health
     int healthImageX;
     int healthImageY;
@@ -65,29 +92,35 @@ class GameController {
     int healthBarHeight = 32;
     // relative to the screen width
     int healthBarWidth;
-
+    
     
     
     GameController() {
-
-      // show current fps on the screen
-
-      
-
-
-
+        
+        //show current fps on the screen
+        
+        player = new Player();
+        
         setItemsPosition();
         setGunsPosition();
         setAmmoPosition();
         setHealthPosition();
-
-
+        
+        
         guns = new ArrayList<Gun>();
         // add guns to the list
         
         guns.add(new Gun("revolver", gunsX.get(0), gunsY.get(0), gunsWidth, gunsHeight, 7, 3, 12, true, false, "Assets/guns/revolver.png", "Assets/guns/revolver_scope.png", "Assets/guns/revolver_shot.mp3", "Assets/guns/revolver_reload.wav"));
         guns.add(new Gun("ak47", gunsX.get(1), gunsY.get(1), gunsWidth, gunsHeight, 30, 3, 12, false, true, "Assets/guns/ak47.png", "Assets/guns/ak47_scope.png", "Assets/guns/ak47_shot.mp3", "Assets/guns/ak47_reload.wav"));
-        guns.add(new Gun("sniper", gunsX.get(2), gunsY.get(2), gunsWidth, gunsHeight, 1, 3, 12, false, false, "Assets/guns/sniper.png", "Assets/guns/sniper_scope.png", "Assets/guns/sniper_shot.mp3", "Assets/guns/sniper_reload.wav"));
+        guns.add(new Gun("sniper", gunsX.get(2), gunsY.get(2), gunsWidth, gunsHeight, 1, 3, 999, false, false, "Assets/guns/sniper.png", "Assets/guns/sniper_scope.png", "Assets/guns/sniper_shot.mp3", "Assets/guns/sniper_reload.wav"));
+        
+        
+        
+        // add enemies to the list
+        enemies = new ArrayList<Enemy>();
+        
+        // enemies.add(new Enemy("Assets/enemies/enemy_1/", 500, 500, 20, 10, true, "Assets/enemies/enemy_1/death.mp3"));
+        
     }
     
     ArrayList<Gun> getGuns() {
@@ -130,26 +163,24 @@ class GameController {
             itemsY.add(displayHeight - itemsHeight - itemMarginY);
         }
     }
-
+    
     void setHealthPosition() {
-      healthImageX = itemsX.get(0) + (itemsWidth + itemMarginX) * itemSlots + itemMarginX;
-      healthImageY = itemsY.get(0) + itemsHeight / 2 - healthImageHeight / 2;
-
-      healthBarX = healthImageX + healthImageWidth + 10;
-      healthBarY = itemsY.get(0) + itemsHeight / 2 - healthBarHeight / 2;
-
-      healthBarWidth = displayWidth - healthBarX - itemsWidth - itemMarginX;
+        healthImageX = itemsX.get(0) + (itemsWidth + itemMarginX) * itemSlots + itemMarginX;
+        healthImageY = itemsY.get(0) + itemsHeight / 2 - healthImageHeight / 2;
+        
+        healthBarX = healthImageX + healthImageWidth + 10;
+        healthBarY = itemsY.get(0) + itemsHeight / 2 - healthBarHeight / 2;
+        
+        healthBarWidth = displayWidth - healthBarX - itemsWidth - itemMarginX;
     }
-
-
+    
+    
     
     void displayItems() {
         fill(100, 100, 100, 100);
         rect(0, itemsY.get(0) - itemMarginY,  displayWidth, displayHeight);
-
-
-
-
+        
+        
         for (int i = 0; i < guns.size(); i++) {
             fill(255, 255, 255, 0);
             rect(itemsX.get(i), itemsY.get(i), itemsWidth, itemsHeight, 32);
@@ -157,11 +188,11 @@ class GameController {
             
             // display ammo count
             try{
-                if(guns.get(i).isActive) {
+                if (guns.get(i).isActive) {
                     tint(255, 255);
-            } else {
+                } else {
                     tint(255, 45);
-            }
+                }
             } catch(Exception e) {
                 tint(255, 45);
             }
@@ -170,18 +201,18 @@ class GameController {
                 textSize(currentAmmoTextSize);
                 fill(210, 105, 30);
                 text(guns.get(i).currentBulletCount, ammoX.get(i) + ammoWidth, ammoY.get(i) + ammoHeight);
-
+                
                 fill(0);
                 textSize(maxAmmoTextSize);
-                if(guns.get(i).currentBulletCount < 100) {
-                   if (guns.get(i).currentBulletCount < 10) {
-                        text("/"+ 999, ammoX.get(i) + ammoWidth + currentAmmoTextSize / 2, ammoY.get(i) + ammoHeight);
+                if (guns.get(i).currentBulletCount < 100) {
+                    if (guns.get(i).currentBulletCount < 10) {
+                        text("/" + 999, ammoX.get(i) + ammoWidth + currentAmmoTextSize / 2, ammoY.get(i) + ammoHeight);
+                    } else {
+                        text("/" + 999, ammoX.get(i) + ammoWidth + currentAmmoTextSize, ammoY.get(i) + ammoHeight);
+                    }
                 } else {
-                        text("/"+ 999, ammoX.get(i) + ammoWidth + currentAmmoTextSize, ammoY.get(i) + ammoHeight);
+                    text("/" + 999, ammoX.get(i) + ammoWidth + currentAmmoTextSize * 1.5, ammoY.get(i) + ammoHeight);
                 }
-            } else {
-                text("/"+ 999, ammoX.get(i) + ammoWidth + currentAmmoTextSize * 1.5, ammoY.get(i) + ammoHeight);
-            }
                 
             } catch(Exception e) {
             }
@@ -196,23 +227,62 @@ class GameController {
     }
     
     void displayHealth() {
-      // health bar
-      fill(64);
-      rect(healthBarX, healthBarY, healthBarWidth, healthBarHeight, 10);
-      fill(0, 100, 0);
-      rect(healthBarX, healthBarY, healthBarWidth - 200, healthBarHeight, 10);
-      // health image
-      tint(255, 255);
-      image(loadImage(healthImageFile), healthImageX, healthImageY, healthImageWidth, healthImageHeight);
-
+        //health bar
+        fill(64);
+        rect(healthBarX, healthBarY, healthBarWidth, healthBarHeight, 10);
+        fill(0, 100, 0);
+        // map 0 to 100 to 0 to healthBarWidth
+        rect(healthBarX, healthBarY, map(player.health, 0, 100, 0, healthBarWidth), healthBarHeight, 10);
+        //health image
+        tint(255, 255);
+        image(loadImage(healthImageFile), healthImageX, healthImageY, healthImageWidth, healthImageHeight);
+        
     }
-
-
+    
+    void displayEnemies() {
+        for (Enemy enemy : enemies) {
+            enemy.display();
+        }
+    }
+    
+    void createEnemy() {
+        // String List
+        String[] enemyTypes = { "enemy_2_1"};
+        // Randomly select an enemy type
+        String enemyType = enemyTypes[(int)random(enemyTypes.length)];
+        enemies.add(new Enemy("Assets/enemies/" + enemyType + "/",(int)random(displayWidth / 4, 3 * displayWidth / 4),(int)random(displayHeight / 4, displayHeight / 2), 20, 10, random(1) > 0.5, "Assets/enemies/" + enemyType + "/death.mp3"));
+    }
+    
+    
+    
     void runUI() {
-        displayItems();
-        displayHealth();
-        for (Gun gun : getGuns()) {
-            gun.display();
+        if (player.isGameOver()) {
+            println("Game Over");
+            // display game over screen
+            // display game over screen
+            fill(0, 0, 0, 100);
+            rect(0, 0, displayWidth, displayHeight);
+            fill(255, 255, 255);
+            textSize(64);
+            textAlign(CENTER, CENTER);
+            text("Game Over", displayWidth / 2, displayHeight / 2);
+            textSize(32);
+            text("Press 'R' to restart", displayWidth / 2, displayHeight / 2 + 100);
+            
+        } else {
+            // random enemy creation based on frame
+            if (frameCount % (int) random(10, 120) == 0) {
+                if (random(1) > 0.5) {
+                    createEnemy();
+                }
+            }
+            
+            displayItems();
+            displayHealth();
+            for (Gun gun : getGuns()) {
+                gun.display();
+            }
+            displayEnemies();
         }
     }
 }
@@ -221,137 +291,12 @@ class GameController {
 
 //===== = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Gun Class == = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = / /
 
-class Gun {
-    // Gun class fields
-    String name;
-    int x, y;
-    int height, width;
-    int maxBulletCount;
-    int reloadTime;
-    int damage;
-    boolean isActive;
-    boolean isFiringAuto;
-    String gunImageFile;
-    String scopeImageFile;
-    String fireSoundFile;
-    // This field is used tokeep track of the current bullet count
-    int currentBulletCount;
-    SoundFile fireSound;
-    SoundFile reloadSound;
-    boolean isReloading = false;
-    boolean isFiring = false;
-    float targetShake = 0;
-    float maxTargetShake = 10;
-    float shakeDecay = 0.8f;
-    
-    
-    Gun(String name, int x, int y, int height, int width, int maxBulletCount, int reloadTime, int damage, boolean isActive, boolean isFiringAuto, String gunImageFile, String scopeImageFile, String fireSoundFile, String reloadSoundFile) {
-        this.name = name;
-        this.x = x;
-        this.y = y;
-        this.height = height;
-        this.width = width;
-        this.maxBulletCount = maxBulletCount;
-        // reload time in seconds
-        this.reloadTime = reloadTime;
-        this.damage = damage;
-        this.isActive = isActive;
-        this.isFiringAuto = isFiringAuto;
-        this.gunImageFile = gunImageFile;
-        this.scopeImageFile = scopeImageFile;
-        this.fireSoundFile = fireSoundFile;
-        // set the current bullet count to the max bullet count at the begining
-        this.currentBulletCount = maxBulletCount;
-        this.fireSound = new SoundFile(Game_Project.this, fireSoundFile);
-        this.reloadSound = new SoundFile(Game_Project.this, reloadSoundFile);
-        
-    }
-    
-    void scopeFollowMouse() {
-        float shakeOffsetX = random( -targetShake, targetShake);
-        float shakeOffsetY = random( -targetShake, targetShake);
-        image(loadImage(scopeImageFile), mouseX - width / 4 + shakeOffsetX, mouseY - height / 4 + shakeOffsetY, width / 2, height / 2);
-        targetShake *= shakeDecay;
-    }
-    
-    void display() {
-        fill(100, 100, 100, 0);
-        rect(x, y, width, height);
-        if (!isActive) {
-            tint(255, 45);
-            image(loadImage(gunImageFile), x, y, width, height);
-        } else {
-            tint(255, 255);
-            image(loadImage(gunImageFile), x, y,width, height);
-            scopeFollowMouse();
-        }
-    }
-    
-    void fire() {
-        if (isActive) {
-            if (currentBulletCount > 0) {
-                isFiring = true;
-                if (isFiringAuto) {
-                    Thread fireThread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            while(isFiring) {
-                                if (currentBulletCount > 0) {
-                                    currentBulletCount--;
-                                    targetShake = maxTargetShake;
-                                    fireSound.play();
-                                    try {
-                                        Thread.sleep(100);
-                                    } catch(InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                } else {
-                                    isFiring = false;
-                                }
-                            }
-                        }
-                    });
-                    fireThread.start();
-                } else {
-                    currentBulletCount--;
-                    targetShake = maxTargetShake;
-                    fireSound.play();
-                    isFiring = false;
-                    print(currentBulletCount);
-                }
-                
-            } else if (!isReloading) {  // Check if not already reloading
-                isReloading = true;
-                reload();
-            }
-            
-        }
-    }
-    
-    void reload() {
-        if (isActive) {
-            reloadSound.play();
-            Thread reloadThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(reloadTime * 1000); // Convert reload time to milliseconds
-                    } catch(InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    currentBulletCount = maxBulletCount;
-                    isReloading = false;
-                }
-            });
-            reloadThread.start();
-        }
-    }
-    
-}
+
 
 
 void mousePressed() {
-    gameController.getActiveGun().fire();
+    
+    gameController.getActiveGun().fire(gameController.enemies);
 }
 
 void mouseReleased() {
@@ -361,10 +306,13 @@ void mouseReleased() {
 
 void keyPressed() {
     for (int i = 0; i < gameController.getGuns().size(); i++) {
-        if (key == str(i + 1).charAt(0)) {
-            gameController.setActiveGun(i);
+        if (!gameController.getActiveGun().isReloading) {
+            if (key == str(i + 1).charAt(0)) {
+                gameController.setActiveGun(i);
+            }
         }
-}
+        
+    }
     if (key == 'r') {
         if (!gameController.getActiveGun().isReloading && gameController.getActiveGun().currentBulletCount < gameController.getActiveGun().maxBulletCount) {
             gameController.getActiveGun().isReloading = true;
@@ -374,7 +322,7 @@ void keyPressed() {
 }
 
 // void mouseWheel(MouseEvent event) {
-//   float e = event.getCount();
-//   if (e > 0) {
+//   float e= event.getCount();
+//   if (e >0) {
 //   }
 // }
