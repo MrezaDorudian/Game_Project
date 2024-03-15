@@ -6,6 +6,7 @@ class Gun {
     int x, y;
     int height, width;
     int maxBulletCount;
+    int currentAmmo;
     int reloadTime;
     int damage;
     boolean isActive;
@@ -24,13 +25,14 @@ class Gun {
     float shakeDecay = 0.8f;
     
     
-    Gun(String name, int x, int y, int height, int width, int maxBulletCount, int reloadTime, int damage, boolean isActive, boolean isFiringAuto, String gunImageFile, String scopeImageFile, String fireSoundFile, String reloadSoundFile) {
+    Gun(String name, int x, int y, int height, int width, int maxBulletCount, int currentAmmo, int reloadTime, int damage, boolean isActive, boolean isFiringAuto, String gunImageFile, String scopeImageFile, String fireSoundFile, String reloadSoundFile) {
         this.name = name;
         this.x = x;
         this.y = y;
         this.height = height;
         this.width = width;
         this.maxBulletCount = maxBulletCount;
+        this.currentAmmo = currentAmmo;
         // reload time in seconds
         this.reloadTime = reloadTime;
         this.damage = damage;
@@ -133,7 +135,15 @@ class Gun {
                     } catch(InterruptedException e) {
                         e.printStackTrace();
                     }
-                    currentBulletCount = maxBulletCount;
+                    if (currentAmmo >= maxBulletCount) {
+                        currentAmmo -= maxBulletCount - currentBulletCount;
+                        currentBulletCount = maxBulletCount;
+                    } else {
+                        currentBulletCount = currentAmmo;
+                        currentAmmo -= maxBulletCount - currentBulletCount;
+
+                    }
+                    
                     isReloading = false;
                 }
             });

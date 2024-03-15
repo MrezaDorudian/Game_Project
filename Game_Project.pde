@@ -1,21 +1,55 @@
 import processing.sound.*;
+import controlP5.*;
 
 
 String projectBaseURL = "C:/Users/elmo/Desktop/Game_Project/";
-
+PImage img;
 Gun revolver, ak47, sniper;
 
 GameController gameController;
+
+
+
+
+//String backgroundSpriteAddress = "Assets/background/";
+//ArrayList<PImage> backgroundImages;
+PImage bg;
+
+
 void setup() {
+    // print processing.exe path in the computer
+    println(sketchPath());
+    
+
+  //backgroundImages = new ArrayList<PImage>();
+  //  File backgroundFolder = new File(projectBaseURL + backgroundSpriteAddress);
+  //  File[] backgroundFiles = backgroundFolder.listFiles();
+
+  //  for (File file : backgroundFiles) {
+  //      backgroundImages.add(loadImage(file.getAbsolutePath()));
+  //  }
+  //  println(backgroundImages.size());
+    bg = loadImage("Assets/background.jpg");
+    // reduce opacity of the background image
+    bg.filter(GRAY);
+    
+
+
+
     gameController = new GameController();
     noCursor();
     fullScreen();
+    bg.resize(displayWidth, displayHeight);
     noStroke();
-    frameRate(30);
+    frameRate(60);
 }
 
 void draw() {
-    background(200);
+    background(bg);
+
+    // tint(255, 100);
+    // image(backgroundImages.get(frameCount % backgroundImages.size()), 0, 0, displayWidth, displayHeight);
+    //background(200);
     gameController.runUI();
 }
 
@@ -25,6 +59,12 @@ void draw() {
 
 static class Player {
     static int health = 3;
+    static ArrayList<Integer> bullets;
+
+    Player() {
+        bullets = new ArrayList<Integer>();
+
+    }
     
     static void takeDamage(int damage) {
         health -= damage;
@@ -110,9 +150,9 @@ class GameController {
         guns = new ArrayList<Gun>();
         // add guns to the list
         
-        guns.add(new Gun("revolver", gunsX.get(0), gunsY.get(0), gunsWidth, gunsHeight, 7, 3, 12, true, false, "Assets/guns/revolver.png", "Assets/guns/revolver_scope.png", "Assets/guns/revolver_shot.mp3", "Assets/guns/revolver_reload.wav"));
-        guns.add(new Gun("ak47", gunsX.get(1), gunsY.get(1), gunsWidth, gunsHeight, 30, 3, 12, false, true, "Assets/guns/ak47.png", "Assets/guns/ak47_scope.png", "Assets/guns/ak47_shot.mp3", "Assets/guns/ak47_reload.wav"));
-        guns.add(new Gun("sniper", gunsX.get(2), gunsY.get(2), gunsWidth, gunsHeight, 1, 3, 999, false, false, "Assets/guns/sniper.png", "Assets/guns/sniper_scope.png", "Assets/guns/sniper_shot.mp3", "Assets/guns/sniper_reload.wav"));
+        guns.add(new Gun("revolver", gunsX.get(0), gunsY.get(0), gunsWidth, gunsHeight, 7, 14, 3, 12, true, false, "Assets/guns/revolver.png", "Assets/guns/revolver_scope.png", "Assets/guns/revolver_shot.mp3", "Assets/guns/revolver_reload.wav"));
+        guns.add(new Gun("ak47", gunsX.get(1), gunsY.get(1), gunsWidth, gunsHeight, 30, 60, 3, 12, false, true, "Assets/guns/ak47.png", "Assets/guns/ak47_scope.png", "Assets/guns/ak47_shot.mp3", "Assets/guns/ak47_reload.wav"));
+        guns.add(new Gun("sniper", gunsX.get(2), gunsY.get(2), gunsWidth, gunsHeight, 1, 10, 3, 999, false, false, "Assets/guns/sniper.png", "Assets/guns/sniper_scope.png", "Assets/guns/sniper_shot.mp3", "Assets/guns/sniper_reload.wav"));
         
         
         
@@ -206,12 +246,12 @@ class GameController {
                 textSize(maxAmmoTextSize);
                 if (guns.get(i).currentBulletCount < 100) {
                     if (guns.get(i).currentBulletCount < 10) {
-                        text("/" + 999, ammoX.get(i) + ammoWidth + currentAmmoTextSize / 2, ammoY.get(i) + ammoHeight);
+                        text("/" + guns.get(i).currentAmmo, ammoX.get(i) + ammoWidth + currentAmmoTextSize / 2, ammoY.get(i) + ammoHeight);
                     } else {
-                        text("/" + 999, ammoX.get(i) + ammoWidth + currentAmmoTextSize, ammoY.get(i) + ammoHeight);
+                        text("/" + guns.get(i).currentAmmo, ammoX.get(i) + ammoWidth + currentAmmoTextSize, ammoY.get(i) + ammoHeight);
                     }
                 } else {
-                    text("/" + 999, ammoX.get(i) + ammoWidth + currentAmmoTextSize * 1.5, ammoY.get(i) + ammoHeight);
+                    text("/" + guns.get(i).currentAmmo, ammoX.get(i) + ammoWidth + currentAmmoTextSize * 1.5, ammoY.get(i) + ammoHeight);
                 }
                 
             } catch(Exception e) {
@@ -243,11 +283,17 @@ class GameController {
         for (Enemy enemy : enemies) {
             enemy.display();
         }
+
+        for (int i = 0; i < enemies.size(); i++) {
+            if (enemies.get(i).isDead) {
+                enemies.remove(i);
+            }
+        }
     }
     
     void createEnemy() {
         // String List
-        String[] enemyTypes = { "enemy_2_1"};
+        String[] enemyTypes = { "enemy_1_1", "enemy_1_2"};
         // Randomly select an enemy type
         String enemyType = enemyTypes[(int)random(enemyTypes.length)];
         enemies.add(new Enemy("Assets/enemies/" + enemyType + "/",(int)random(displayWidth / 4, 3 * displayWidth / 4),(int)random(displayHeight / 4, displayHeight / 2), 20, 10, random(1) > 0.5, "Assets/enemies/" + enemyType + "/death.mp3"));
@@ -272,7 +318,7 @@ class GameController {
         } else {
             // random enemy creation based on frame
             if (frameCount % (int) random(10, 120) == 0) {
-                if (random(1) > 0.5) {
+                if (random(1) > 0.6) {
                     createEnemy();
                 }
             }
@@ -283,6 +329,9 @@ class GameController {
                 gun.display();
             }
             displayEnemies();
+            textSize(32);
+            fill(0);
+            text(enemies.size(), 100, 100);
         }
     }
 }
@@ -308,7 +357,9 @@ void keyPressed() {
     for (int i = 0; i < gameController.getGuns().size(); i++) {
         if (!gameController.getActiveGun().isReloading) {
             if (key == str(i + 1).charAt(0)) {
-                gameController.setActiveGun(i);
+                if (!gameController.getActiveGun().isFiring) {
+                    gameController.setActiveGun(i);
+                }
             }
         }
         
