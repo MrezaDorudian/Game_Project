@@ -21,13 +21,18 @@ class Enemy {
     boolean isIdle = false;
     boolean castToVoid = false;
     
+    // droppable items
+    boolean dropHealth = false;
+    boolean dropAmmo = false;
+    
     float colliderX, colliderY, colliderWidth, colliderHeight;
     
     String deathSoundFile;
     SoundFile deathSound;
+    SoundFile dropSound;
     
     
-    Enemy(String baseSpriteAddress, int x, int y, float speed, int damage, boolean directionRight, String deathSoundFile) {
+    Enemy(String baseSpriteAddress, int x, int y, float speed, int damage, boolean directionRight, boolean dropHealth, boolean dropAmmo, String deathSoundFile) {
         this.baseSpriteAddress = baseSpriteAddress;
         this.x = x;
         this.y = y;
@@ -38,6 +43,11 @@ class Enemy {
         this.directionRight = directionRight;
         this.deathSoundFile = deathSoundFile;
         this.deathSound = new SoundFile(Game_Project.this, deathSoundFile);
+        this.dropHealth = dropHealth;
+        this.dropAmmo = dropAmmo;
+        
+        
+        
         setAnimations();
     }
     
@@ -91,7 +101,7 @@ class Enemy {
     }
     
     void display() {
-        setIdle();
+        // setIdle();
         if (!castToVoid) {
             if (!isDead) {
                 if (!isIdle) {
@@ -102,13 +112,13 @@ class Enemy {
                         colliderHeight = 1000000 / currentDistance * 0.2;
                         colliderX = x - colliderWidth / 2;
                         colliderY = y + colliderHeight / 2;
-                        rect(colliderX, colliderY, colliderWidth, colliderHeight);
+                        // rect(colliderX, colliderY, colliderWidth, colliderHeight);
                     } else if (baseSpriteAddress.indexOf("enemy_2") >= 0) {
                         colliderWidth = 1000000 / currentDistance * 0.2;
                         colliderHeight = 1000000 / currentDistance * 0.2;
                         colliderX = x - colliderWidth / 2;
                         colliderY = y + colliderHeight / 2;
-                        rect(colliderX, colliderY, colliderWidth, colliderHeight);
+                        // rect(colliderX, colliderY, colliderWidth, colliderHeight);
                     }
                     image(moveSprites.get(frameCount % moveSprites.size()), x - 1000000 / currentDistance / 2 , y - 1000000 / currentDistance / 2, 1000000 / currentDistance, 1000000 / currentDistance);
                     currentDistance -= speed;
@@ -119,7 +129,7 @@ class Enemy {
                     colliderHeight = 1000000 / currentDistance * 0.2;
                     colliderX = x - colliderWidth / 2;
                     colliderY = y + colliderHeight / 2;
-                    rect(colliderX, colliderY, colliderWidth, colliderHeight);
+                    // rect(colliderX, colliderY, colliderWidth, colliderHeight);
                     image(idleSprites.get(frameCount % idleSprites.size()), x - 1000000 / currentDistance / 2 , y - 1000000 / currentDistance / 2, 1000000 / currentDistance, 1000000 / currentDistance);
                     currentDistance -= 0;
                     
@@ -156,6 +166,11 @@ class Enemy {
                         y = -1000000;
                     } });
                 deathAnimationThread.start();
+                // if (dropHealth) {
+                //     Player.health += (int) random(10, 20);
+                // } else if (dropAmmo) {
+                //     Player.ammo += (int) random(10, 20);
+                // }
                 
             }
         }

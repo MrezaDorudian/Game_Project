@@ -125,29 +125,33 @@ class Gun {
     
     void reload() {
         if (isActive) {
-            isFiring = false;
-            reloadSound.play();
-            Thread reloadThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(reloadTime * 1000); // Convert reload time to milliseconds
-                    } catch(InterruptedException e) {
-                        e.printStackTrace();
+            if (currentAmmo > 0) {
+                isFiring = false;
+                reloadSound.play();
+                Thread reloadThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(reloadTime * 1000); // Convert reload time to milliseconds
+                        } catch(InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        if  (currentAmmo - (maxBulletCount - currentBulletCount) < 0) {
+                            currentBulletCount += currentAmmo;
+                            currentAmmo = 0;
+                        } else {
+                            currentAmmo -= maxBulletCount - currentBulletCount;
+                            currentBulletCount += maxBulletCount - currentBulletCount;
+                        }
+                        
+                        
+                        isReloading = false;
                     }
-                    if (currentAmmo >= maxBulletCount) {
-                        currentAmmo -= maxBulletCount - currentBulletCount;
-                        currentBulletCount = maxBulletCount;
-                    } else {
-                        currentBulletCount = currentAmmo;
-                        currentAmmo -= maxBulletCount - currentBulletCount;
-
-                    }
-                    
-                    isReloading = false;
-                }
-            });
-            reloadThread.start();
+                });
+                reloadThread.start();
+            } else {
+                isReloading = false;
+            }
         }
     }
     

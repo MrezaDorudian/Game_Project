@@ -29,9 +29,9 @@ void setup() {
   //      backgroundImages.add(loadImage(file.getAbsolutePath()));
   //  }
   //  println(backgroundImages.size());
-    bg = loadImage("Assets/background.jpg");
+    bg = loadImage("Assets/background.jpeg");
     // reduce opacity of the background image
-    bg.filter(GRAY);
+    // bg.filter(GRAY);
     
 
 
@@ -63,7 +63,6 @@ static class Player {
 
     Player() {
         bullets = new ArrayList<Integer>();
-
     }
     
     static void takeDamage(int damage) {
@@ -217,7 +216,7 @@ class GameController {
     
     
     void displayItems() {
-        fill(100, 100, 100, 100);
+        fill(70, 70, 70, 210);
         rect(0, itemsY.get(0) - itemMarginY,  displayWidth, displayHeight);
         
         
@@ -286,6 +285,11 @@ class GameController {
 
         for (int i = 0; i < enemies.size(); i++) {
             if (enemies.get(i).isDead) {
+                if (enemies.get(i).dropHealth) {
+                    Player.health += (int) random(5, 15);
+                } else if (enemies.get(i).dropAmmo) {
+                    guns.get((int)random(guns.size())).currentAmmo += (int) random(2, 8);
+                }
                 enemies.remove(i);
             }
         }
@@ -296,7 +300,11 @@ class GameController {
         String[] enemyTypes = { "enemy_1_1", "enemy_1_2"};
         // Randomly select an enemy type
         String enemyType = enemyTypes[(int)random(enemyTypes.length)];
-        enemies.add(new Enemy("Assets/enemies/" + enemyType + "/",(int)random(displayWidth / 4, 3 * displayWidth / 4),(int)random(displayHeight / 4, displayHeight / 2), 20, 10, random(1) > 0.5, "Assets/enemies/" + enemyType + "/death.mp3"));
+
+        int dropItemRandom = (int)random(100);
+        boolean dropHealth = dropItemRandom > 0 && dropItemRandom < 10;
+        boolean dropAmmo = dropItemRandom > 10 && dropItemRandom < 40;
+        enemies.add(new Enemy("Assets/enemies/" + enemyType + "/",(int)random(displayWidth / 4, 3 * displayWidth / 4),(int)random(displayHeight / 4, displayHeight / 2), 20, 10, random(1) > 0.5, dropHealth, dropAmmo, "Assets/enemies/" + enemyType + "/death.mp3"));
     }
     
     
@@ -313,7 +321,7 @@ class GameController {
             textAlign(CENTER, CENTER);
             text("Game Over", displayWidth / 2, displayHeight / 2);
             textSize(32);
-            text("Press 'R' to restart", displayWidth / 2, displayHeight / 2 + 100);
+            // text("Press 'R' to restart", displayWidth / 2, displayHeight / 2 + 100);
             
         } else {
             // random enemy creation based on frame
