@@ -61,6 +61,8 @@ class Enemy {
     
     
     void setAnimations() {
+        println(projectBaseURL + baseSpriteAddress + "idle");
+      
         idleSprites = new ArrayList<PImage>();
         attackSprites = new ArrayList<PImage>();
         moveSprites = new ArrayList<PImage>();
@@ -82,6 +84,7 @@ class Enemy {
         File[] deathFiles = deathFolder.listFiles();
         
         for (File file : idleFiles) {
+            println(file.getAbsolutePath());
             idleSprites.add(loadImage(file.getAbsolutePath()));
         }
         for (File file : moveFiles) {
@@ -176,4 +179,3 @@ class Enemy {
         }
     }
 }
-

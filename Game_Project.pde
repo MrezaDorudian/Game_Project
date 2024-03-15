@@ -2,7 +2,7 @@ import processing.sound.*;
 import controlP5.*;
 
 
-String projectBaseURL = "C:/Users/elmo/Desktop/Game_Project/";
+String projectBaseURL;
 PImage img;
 Gun revolver, ak47, sniper;
 
@@ -18,7 +18,8 @@ PImage bg;
 
 void setup() {
     // print processing.exe path in the computer
-    println(sketchPath());
+    projectBaseURL = sketchPath().replace("\\", "/") + "/";
+    println(projectBaseURL);
     
 
   //backgroundImages = new ArrayList<PImage>();
