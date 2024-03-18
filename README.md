@@ -1,9 +1,9 @@
 ## references:
 
 ### background image:
-https://stock.adobe.com/ca/search?k=horror%20background
+- https://stock.adobe.com/ca/search?k=horror%20background
 
-### assets/iamges:
+### assets/images:
 - https://creativekind.itch.io/necromancer-free
 - https://www.flaticon.com/search?word=gun%20scope
 - https://www.flaticon.com/search?word=bullets
