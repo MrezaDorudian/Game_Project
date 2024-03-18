@@ -1,5 +1,4 @@
 import processing.sound.*;
-import controlP5.*;
 
 
 String projectBaseURL;
@@ -19,24 +18,24 @@ PImage bg;
 void setup() {
     // print processing.exe path in the computer
     projectBaseURL = sketchPath().replace("\\", "/") + "/";
-    println(projectBaseURL);
+    //println(projectBaseURL);
     
-
-  //backgroundImages = new ArrayList<PImage>();
-  //  File backgroundFolder = new File(projectBaseURL + backgroundSpriteAddress);
-  //  File[] backgroundFiles = backgroundFolder.listFiles();
-
-  //  for (File file : backgroundFiles) {
-  //      backgroundImages.add(loadImage(file.getAbsolutePath()));
-  //  }
-  //  println(backgroundImages.size());
-    bg = loadImage("Assets/background.jpeg");
+    
+    //backgroundImages = new ArrayList<PImage>();
+    //File backgroundFolder = new File(projectBaseURL + backgroundSpriteAddress);
+    //File[] backgroundFiles = backgroundFolder.listFiles();
+    
+    //for (File file : backgroundFiles) {
+    //backgroundImages.add(loadImage(file.getAbsolutePath()));
+//  }
+    //println(backgroundImages.size());
+    bg = loadImage("Assets/background.png");
     // reduce opacity of the background image
     // bg.filter(GRAY);
     
-
-
-
+    
+    
+    
     gameController = new GameController();
     noCursor();
     fullScreen();
@@ -47,7 +46,7 @@ void setup() {
 
 void draw() {
     background(bg);
-
+    
     // tint(255, 100);
     // image(backgroundImages.get(frameCount % backgroundImages.size()), 0, 0, displayWidth, displayHeight);
     //background(200);
@@ -59,9 +58,9 @@ void draw() {
 
 
 static class Player {
-    static int health = 3;
+    static int health = 40;
     static ArrayList<Integer> bullets;
-
+    
     Player() {
         bullets = new ArrayList<Integer>();
     }
@@ -217,7 +216,9 @@ class GameController {
     
     
     void displayItems() {
-        fill(70, 70, 70, 210);
+        fill(200, 200, 200, 200);
+        rect(0, itemsY.get(0) - itemMarginY + 40, 300 , 75);
+        fill(72,61,139, 100);
         rect(0, itemsY.get(0) - itemMarginY,  displayWidth, displayHeight);
         
         
@@ -242,7 +243,7 @@ class GameController {
                 fill(210, 105, 30);
                 text(guns.get(i).currentBulletCount, ammoX.get(i) + ammoWidth, ammoY.get(i) + ammoHeight);
                 
-                fill(0);
+                fill(255, 0, 0);
                 textSize(maxAmmoTextSize);
                 if (guns.get(i).currentBulletCount < 100) {
                     if (guns.get(i).currentBulletCount < 10) {
@@ -283,7 +284,7 @@ class GameController {
         for (Enemy enemy : enemies) {
             enemy.display();
         }
-
+        
         for (int i = 0; i < enemies.size(); i++) {
             if (enemies.get(i).isDead) {
                 if (enemies.get(i).dropHealth) {
@@ -301,10 +302,10 @@ class GameController {
         String[] enemyTypes = { "enemy_1_1", "enemy_1_2"};
         // Randomly select an enemy type
         String enemyType = enemyTypes[(int)random(enemyTypes.length)];
-
+        
         int dropItemRandom = (int)random(100);
         boolean dropHealth = dropItemRandom > 0 && dropItemRandom < 10;
-        boolean dropAmmo = dropItemRandom > 10 && dropItemRandom < 40;
+        boolean dropAmmo = dropItemRandom > 10 && dropItemRandom < 50;
         enemies.add(new Enemy("Assets/enemies/" + enemyType + "/",(int)random(displayWidth / 4, 3 * displayWidth / 4),(int)random(displayHeight / 4, displayHeight / 2), 20, 10, random(1) > 0.5, dropHealth, dropAmmo, "Assets/enemies/" + enemyType + "/death.mp3"));
     }
     
@@ -322,12 +323,12 @@ class GameController {
             textAlign(CENTER, CENTER);
             text("Game Over", displayWidth / 2, displayHeight / 2);
             textSize(32);
-            // text("Press 'R' to restart", displayWidth / 2, displayHeight / 2 + 100);
+            text("Press 'R' to restart", displayWidth / 2, displayHeight / 2 + 100);
             
         } else {
             // random enemy creation based on frame
             if (frameCount % (int) random(10, 120) == 0) {
-                if (random(1) > 0.6) {
+                if (random(1) > 0.3) {
                     createEnemy();
                 }
             }
@@ -374,9 +375,14 @@ void keyPressed() {
         
     }
     if (key == 'r') {
-        if (!gameController.getActiveGun().isReloading && gameController.getActiveGun().currentBulletCount < gameController.getActiveGun().maxBulletCount) {
-            gameController.getActiveGun().isReloading = true;
-            gameController.getActiveGun().reload();
+        if (gameController.player.isGameOver()) {
+            gameController.player.health = 40;
+            gameController = new GameController();
+        } else {
+            if (!gameController.getActiveGun().isReloading && gameController.getActiveGun().currentBulletCount < gameController.getActiveGun().maxBulletCount) {
+                gameController.getActiveGun().isReloading = true;
+                gameController.getActiveGun().reload();
+            }
         }
     }
 }

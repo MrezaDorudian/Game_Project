@@ -53,7 +53,7 @@ class Enemy {
     
     void hit(int damage) {
         health -= damage;
-        println("Enemy health: " + health);
+        //println("Enemy health: " + health);
         if (health <= 0) {
             isDead = true;
         }
@@ -61,7 +61,7 @@ class Enemy {
     
     
     void setAnimations() {
-        println(projectBaseURL + baseSpriteAddress + "idle");
+        //println(projectBaseURL + baseSpriteAddress + "idle");
       
         idleSprites = new ArrayList<PImage>();
         attackSprites = new ArrayList<PImage>();
@@ -84,7 +84,7 @@ class Enemy {
         File[] deathFiles = deathFolder.listFiles();
         
         for (File file : idleFiles) {
-            println(file.getAbsolutePath());
+            //println(file.getAbsolutePath());
             idleSprites.add(loadImage(file.getAbsolutePath()));
         }
         for (File file : moveFiles) {
